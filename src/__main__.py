@@ -135,7 +135,7 @@ if __name__ == "__main__":
     next_button = QtGui.QPushButton(container)
     next_button.setText("Next")
     next_button.clicked.connect(next_date)
-    previous_button.setShortcut(QtCore.Qt.Key_Right)
+    next_button.setShortcut(QtCore.Qt.Key_Right)
     layout.addWidget(next_button, 2, 2)
 
     mayavi_widget = MayaviQWidget(container)
