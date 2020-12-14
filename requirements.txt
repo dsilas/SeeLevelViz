@@ -6,11 +6,14 @@ importlib-metadata==3.1.1
 importlib-resources==3.3.0
 mayavi==4.7.2
 numpy==1.19.4
+pandas==1.1.5
 Pillow==8.0.1
 pyface==7.2.0
 Pygments==2.7.3
 PyQt5==5.15.2
 PyQt5-sip==12.8.1
+python-dateutil==2.8.1
+pytz==2020.4
 six==1.15.0
 traits==6.1.1
 traitsui==7.1.1

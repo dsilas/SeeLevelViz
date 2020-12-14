@@ -1,25 +1,7 @@
-"""
-import gdal
-import numpy as np
-from mayavi import mlab
-from tvtk.tools import visual
+import pandas
 
-ds = gdal.Open('./data/elevation_rez50.tif')
-data = ds.ReadAsArray()
-
-fig = mlab.figure(size=(1800, 1200), bgcolor=(0.16, 0.28, 0.46))
-visual.set_viewer(fig)
-
-WARP_SCALE = 0.3
-MAX_VALUE = np.amax(data) * WARP_SCALE
-MIN_VALUE = np.amin(data) * WARP_SCALE
-
-mlab.surf(data, warp_scale=WARP_SCALE)
-
-b1 = visual.box(z=MIN_VALUE, length=len(data), height=len(data[0]))
-b1.v = 5.0
-mlab.show()
-"""
+INPUT_DATA = pandas.read_csv("input.csv")
+CURRENT_DATE = 0
 
 # First, and before importing any Enthought packages, set the ETS_TOOLKIT
 # environment variable to qt4, to tell Traits that we will use Qt.
@@ -55,7 +37,6 @@ class Visualization(HasTraits):
         # VTK features require a GLContext.
 
         import gdal
-        import numpy as np
         from tvtk.tools import visual
 
         ds = gdal.Open('./data/elevation_rez50.tif')
@@ -64,12 +45,10 @@ class Visualization(HasTraits):
         visual.set_viewer(self.scene.mayavi_scene)
 
         WARP_SCALE = 0.3
-        MAX_VALUE = np.amax(data) * WARP_SCALE
-        MIN_VALUE = np.amin(data) * WARP_SCALE
 
         self.scene.mlab.surf(data, warp_scale=WARP_SCALE)
 
-        b1 = visual.box(z=MIN_VALUE, length=len(data), height=len(data[0]))
+        b1 = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE, length=len(data), height=len(data[0]))
         b1.v = 5.0
 
     # the layout of the dialog screated
@@ -115,7 +94,7 @@ if __name__ == "__main__":
     # put some stuff around mayavi
     label_list = []
     label = QtGui.QLabel(container)
-    label.setText("Current Date / Current Water Level")
+    label.setText(f"Current Date {INPUT_DATA.iloc[CURRENT_DATE][0]} / Current Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
     label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
     layout.addWidget(label, 2, 1)
     label_list.append(label)
