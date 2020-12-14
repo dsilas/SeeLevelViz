@@ -24,7 +24,7 @@ from traitsui.api import View, Item
 from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
 
-WARP_SCALE = 0.3
+WARP_SCALE = 0.2
 
 ################################################################################
 #The actual visualization
@@ -50,6 +50,8 @@ class Visualization(HasTraits):
 
         self.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE, length=len(data), height=len(data[0]))
         self.water_level.v = 5.0
+
+        self.scene.mlab.view(azimuth=45, elevation=45)
 
     # the layout of the dialog screated
     view = View(Item('scene', editor=SceneEditor(scene_class=MayaviScene),
