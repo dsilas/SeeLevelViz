@@ -24,6 +24,7 @@ from traitsui.api import View, Item
 from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
 
+WARP_SCALE = 0.3
 
 ################################################################################
 #The actual visualization
@@ -32,6 +33,7 @@ class Visualization(HasTraits):
 
     @on_trait_change('scene.activated')
     def update_plot(self):
+        global WARP_SCALE
         # This function is called when the view is opened. We don't
         # populate the scene when the view is not yet open, as some
         # VTK features require a GLContext.
@@ -44,12 +46,10 @@ class Visualization(HasTraits):
 
         visual.set_viewer(self.scene.mayavi_scene)
 
-        WARP_SCALE = 0.3
-
         self.scene.mlab.surf(data, warp_scale=WARP_SCALE)
 
-        b1 = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE, length=len(data), height=len(data[0]))
-        b1.v = 5.0
+        self.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE, length=len(data), height=len(data[0]))
+        self.water_level.v = 5.0
 
     # the layout of the dialog screated
     view = View(Item('scene', editor=SceneEditor(scene_class=MayaviScene),
@@ -81,6 +81,35 @@ class MayaviQWidget(QtGui.QWidget):
         self.ui.setParent(self)
 
 
+def previous_date(self):
+    global CURRENT_DATE
+    global INPUT_DATA
+    global mayavi_widget
+    global date_label
+
+    CURRENT_DATE -= 1
+
+    if CURRENT_DATE < 0:
+        CURRENT_DATE = 0
+
+    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
+    date_label.setText(f"Current Date {INPUT_DATA.iloc[CURRENT_DATE][0]} / Current Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+
+
+def next_date(self):
+    global CURRENT_DATE
+    global INPUT_DATA
+    global mayavi_widget
+    global date_label
+
+    CURRENT_DATE += 1
+
+    if CURRENT_DATE > len(INPUT_DATA) - 1:
+        CURRENT_DATE = len(INPUT_DATA) - 1
+
+    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
+    date_label.setText(f"Current Date {INPUT_DATA.iloc[CURRENT_DATE][0]} / Current Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+
 if __name__ == "__main__":
     # Don't create a new QApplication, it would unhook the Events
     # set by Traits on the existing QApplication. Simply use the
@@ -92,24 +121,20 @@ if __name__ == "__main__":
     layout = QtGui.QGridLayout(container)
 
     # put some stuff around mayavi
-    label_list = []
-    label = QtGui.QLabel(container)
-    label.setText(f"Current Date {INPUT_DATA.iloc[CURRENT_DATE][0]} / Current Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
-    label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-    layout.addWidget(label, 2, 1)
-    label_list.append(label)
+    date_label = QtGui.QLabel(container)
+    date_label.setText(f"Current Date {INPUT_DATA.iloc[CURRENT_DATE][0]} / Current Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+    date_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+    layout.addWidget(date_label, 2, 1)
 
-    label = QtGui.QLabel(container)
-    label.setText("Previous")
-    label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-    layout.addWidget(label, 2, 0)
-    label_list.append(label)
+    previous_button = QtGui.QPushButton(container)
+    previous_button.setText("Previous")
+    previous_button.clicked.connect(previous_date)
+    layout.addWidget(previous_button, 2, 0)
 
-    label = QtGui.QLabel(container)
-    label.setText("Next")
-    label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-    layout.addWidget(label, 2, 2)
-    label_list.append(label)
+    next_button = QtGui.QPushButton(container)
+    next_button.setText("Next")
+    next_button.clicked.connect(next_date)
+    layout.addWidget(next_button, 2, 2)
 
     mayavi_widget = MayaviQWidget(container)
 
