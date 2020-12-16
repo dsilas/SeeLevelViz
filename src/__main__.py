@@ -25,7 +25,7 @@ from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
 import gdal
 
-WARP_SCALE = 0.2
+WARP_SCALE = 0.1
 
 ds = gdal.Open('./data/elevation_rez50.tif')
 data = ds.ReadAsArray()
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     layout.addWidget(date_label)
 
     z_slider = QtGui.QSlider(QtCore.Qt.Horizontal)
-    z_slider.setRange(10, 60)
+    z_slider.setRange(5, 30)
     z_slider.setValue(int(WARP_SCALE * 100))
     z_slider.setFocusPolicy(QtCore.Qt.NoFocus)
     z_slider.valueChanged.connect(z_slider_changed)
