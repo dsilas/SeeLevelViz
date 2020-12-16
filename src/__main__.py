@@ -23,8 +23,13 @@ from traits.api import HasTraits, Instance, on_trait_change
 from traitsui.api import View, Item
 from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
+import gdal
 
 WARP_SCALE = 0.2
+
+ds = gdal.Open('./data/elevation_rez50.tif')
+data = ds.ReadAsArray()
+ds = None
 
 ################################################################################
 #The actual visualization
@@ -38,17 +43,15 @@ class Visualization(HasTraits):
         # populate the scene when the view is not yet open, as some
         # VTK features require a GLContext.
 
-        import gdal
         from tvtk.tools import visual
 
-        ds = gdal.Open('./data/elevation_rez50.tif')
-        data = ds.ReadAsArray()
+
 
         visual.set_viewer(self.scene.mayavi_scene)
 
-        self.scene.mlab.surf(data, warp_scale=WARP_SCALE)
-
-        self.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE, length=len(data), height=len(data[0]))
+        self.surf = self.scene.mlab.surf(data, warp_scale=1)
+        self.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
+        self.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE, width=1, length=len(data), height=len(data[0]))
         self.water_level.v = 5.0
 
         self.scene.mlab.view(azimuth=45, elevation=45)
@@ -95,7 +98,8 @@ def previous_date(self):
         CURRENT_DATE = 0
 
     mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
-    date_label.setText(f"Current Date {INPUT_DATA.iloc[CURRENT_DATE][0]} / Current Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+    mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
+    date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
 
 
 def next_date(self):
@@ -110,7 +114,23 @@ def next_date(self):
         CURRENT_DATE = len(INPUT_DATA) - 1
 
     mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
-    date_label.setText(f"Current Date {INPUT_DATA.iloc[CURRENT_DATE][0]} / Current Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+    mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
+    date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+
+def z_slider_changed(value):
+    global mayavi_widget
+    global WARP_SCALE
+    global INPUT_DATA
+    global CURRENT_DATE
+
+    WARP_SCALE = value / 100
+
+    mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
+    z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 100)}")
+    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
+    mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
+
+
 
 if __name__ == "__main__":
     # Don't create a new QApplication, it would unhook the Events
@@ -120,29 +140,40 @@ if __name__ == "__main__":
     container = QtGui.QWidget()
     container.setWindowTitle("Embedding Mayavi in a PyQt4 Application")
     # define a "complex" layout to test the behaviour
-    layout = QtGui.QGridLayout(container)
+    layout = QtGui.QVBoxLayout(container)
+
+    mayavi_widget = MayaviQWidget(container)
+    layout.addWidget(mayavi_widget)
 
     # put some stuff around mayavi
     date_label = QtGui.QLabel(container)
-    date_label.setText(f"Current Date {INPUT_DATA.iloc[CURRENT_DATE][0]} / Current Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
-    date_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-    layout.addWidget(date_label, 2, 1)
+    date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+    date_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+    layout.addWidget(date_label)
+
+    z_slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+    z_slider.setRange(10, 60)
+    z_slider.setValue(int(WARP_SCALE * 100))
+    z_slider.setFocusPolicy(QtCore.Qt.NoFocus)
+    z_slider.valueChanged.connect(z_slider_changed)
+    layout.addWidget(z_slider)
+    z_slider_label = QtGui.QLabel(container)
+    z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 100)}")
+    z_slider_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+    layout.addWidget(z_slider_label)
 
     previous_button = QtGui.QPushButton(container)
     previous_button.setText("Previous")
     previous_button.clicked.connect(previous_date)
     previous_button.setShortcut(QtCore.Qt.Key_Left)
-    layout.addWidget(previous_button, 2, 0)
+    layout.addWidget(previous_button)
 
     next_button = QtGui.QPushButton(container)
     next_button.setText("Next")
     next_button.clicked.connect(next_date)
     next_button.setShortcut(QtCore.Qt.Key_Right)
-    layout.addWidget(next_button, 2, 2)
+    layout.addWidget(next_button)
 
-    mayavi_widget = MayaviQWidget(container)
-
-    layout.addWidget(mayavi_widget, 1, 1)
     # container.show()
     window = QtGui.QMainWindow()
     window.setCentralWidget(container)
