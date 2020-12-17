@@ -1,6 +1,6 @@
 import pandas
 
-INPUT_DATA = pandas.read_csv("input.csv")
+INPUT_DATA = None
 CURRENT_DATE = 0
 
 # First, and before importing any Enthought packages, set the ETS_TOOLKIT
@@ -26,10 +26,7 @@ from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
 import gdal
 
 WARP_SCALE = 0.1
-
-ds = gdal.Open('./data/elevation_rez50.tif')
-data = ds.ReadAsArray()
-ds = None
+DATA = [[0]]
 
 ################################################################################
 #The actual visualization
@@ -39,19 +36,18 @@ class Visualization(HasTraits):
     @on_trait_change('scene.activated')
     def update_plot(self):
         global WARP_SCALE
+        global DATA
         # This function is called when the view is opened. We don't
         # populate the scene when the view is not yet open, as some
         # VTK features require a GLContext.
 
         from tvtk.tools import visual
 
-
-
         visual.set_viewer(self.scene.mayavi_scene)
 
-        self.surf = self.scene.mlab.surf(data, warp_scale=1)
+        self.surf = self.scene.mlab.surf(DATA, warp_scale=1)
         self.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
-        self.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE, width=1, length=len(data), height=len(data[0]))
+        self.water_level = visual.box(x=0, y=0, z=0, width=0, length=0, height=0)
         self.water_level.v = 5.0
 
         self.scene.mlab.view(azimuth=45, elevation=45)
@@ -130,6 +126,57 @@ def z_slider_changed(value):
     mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
     mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
 
+def dem_file_select():
+    global DATA
+    global mayavi_widget
+    global dem_file_button
+    global csv_file_button
+
+    dem_file_name = QtGui.QFileDialog.getOpenFileName()[0]
+    if dem_file_name == '':
+        return
+    dem_file_button.setText(f"DEM File :: {dem_file_name}")
+    ds = gdal.Open(dem_file_name)
+    DATA = ds.ReadAsArray()
+    ds = None
+
+    mayavi_widget.visualization.surf.mlab_source.reset(scalars=DATA, mask=None)
+
+    if INPUT_DATA is None:
+        csv_file_button.setText("Click Here to select a CSV file..")
+        csv_file_button.setEnabled(True)
+    else:
+        mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
+        mayavi_widget.visualization.water_level.width = 1 * (1 + WARP_SCALE)
+        mayavi_widget.visualization.water_level.length = len(DATA)
+        mayavi_widget.visualization.water_level.height = len(DATA[0])
+        mayavi_widget.visualization.water_level.x = (len(DATA) // 2) + 1
+        mayavi_widget.visualization.water_level.y = (len(DATA[0]) // 2) + 1
+
+def csv_file_select():
+    global INPUT_DATA
+    global CURRENT_DATE
+    global WARP_SCALE
+    global DATA
+
+    csv_file_name = QtGui.QFileDialog.getOpenFileName()[0]
+    if csv_file_name == '':
+        return
+
+    csv_file_button.setText(f"CSV File :: {csv_file_name}")
+    INPUT_DATA = pandas.read_csv(csv_file_name)
+    CURRENT_DATE = 0
+    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
+    mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
+    mayavi_widget.visualization.water_level.length = len(DATA)
+    mayavi_widget.visualization.water_level.height = len(DATA[0])
+    mayavi_widget.visualization.water_level.x = (len(DATA) // 2) + 1
+    mayavi_widget.visualization.water_level.y = (len(DATA[0]) // 2) + 1
+
+    date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+    z_slider.setEnabled(True)
+    next_button.setEnabled(True)
+    previous_button.setEnabled(True)
 
 
 if __name__ == "__main__":
@@ -146,8 +193,23 @@ if __name__ == "__main__":
     layout.addWidget(mayavi_widget)
 
     # put some stuff around mayavi
+
+    # DEM FILE SELECT
+    dem_file_button = QtGui.QPushButton(container)
+    dem_file_button.setText("Click Here to select a DEM file..")
+    dem_file_button.clicked.connect(dem_file_select)
+    dem_file_button.setEnabled(True)
+    layout.addWidget(dem_file_button)
+
+    # CSV FILE SELECT
+    csv_file_button = QtGui.QPushButton(container)
+    csv_file_button.setText("CSV File :: None")
+    csv_file_button.clicked.connect(csv_file_select)
+    csv_file_button.setEnabled(False)
+    layout.addWidget(csv_file_button)
+
     date_label = QtGui.QLabel(container)
-    date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
+    date_label.setText("Load CSV to see sea level and date data")
     date_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
     layout.addWidget(date_label)
 
@@ -156,6 +218,7 @@ if __name__ == "__main__":
     z_slider.setValue(int(WARP_SCALE * 100))
     z_slider.setFocusPolicy(QtCore.Qt.NoFocus)
     z_slider.valueChanged.connect(z_slider_changed)
+    z_slider.setEnabled(False)
     layout.addWidget(z_slider)
     z_slider_label = QtGui.QLabel(container)
     z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 100)}")
@@ -166,12 +229,14 @@ if __name__ == "__main__":
     previous_button.setText("Previous")
     previous_button.clicked.connect(previous_date)
     previous_button.setShortcut(QtCore.Qt.Key_Left)
+    previous_button.setEnabled(False)
     layout.addWidget(previous_button)
 
     next_button = QtGui.QPushButton(container)
     next_button.setText("Next")
     next_button.clicked.connect(next_date)
     next_button.setShortcut(QtCore.Qt.Key_Right)
+    next_button.setEnabled(False)
     layout.addWidget(next_button)
 
     # container.show()
