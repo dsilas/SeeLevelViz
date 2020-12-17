@@ -24,6 +24,8 @@ from traitsui.api import View, Item
 from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
 import gdal
+from tvtk.tools import visual
+
 
 WARP_SCALE = 0.1
 DATA = [[0]]
@@ -41,20 +43,13 @@ class Visualization(HasTraits):
         # populate the scene when the view is not yet open, as some
         # VTK features require a GLContext.
 
-        from tvtk.tools import visual
-
         visual.set_viewer(self.scene.mayavi_scene)
-
-        self.surf = self.scene.mlab.surf(DATA, warp_scale=1)
-        self.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
-        self.water_level = visual.box(x=0, y=0, z=0, width=0, length=0, height=0)
-        self.water_level.v = 5.0
-
-        self.scene.mlab.view(azimuth=45, elevation=45)
+        self.surf = None
+        self.water_level = None
 
     # the layout of the dialog screated
     view = View(Item('scene', editor=SceneEditor(scene_class=MayaviScene),
-                     height=250, width=300, show_label=False),
+                     height=800, width=1024, show_label=False),
                 resizable=True # We need this to resize with the parent widget
                 )
 
@@ -93,8 +88,7 @@ def previous_date(self):
     if CURRENT_DATE < 0:
         CURRENT_DATE = 0
 
-    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
-    mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
+    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
     date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
 
 
@@ -109,8 +103,7 @@ def next_date(self):
     if CURRENT_DATE > len(INPUT_DATA) - 1:
         CURRENT_DATE = len(INPUT_DATA) - 1
 
-    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
-    mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
+    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
     date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
 
 def z_slider_changed(value):
@@ -121,10 +114,10 @@ def z_slider_changed(value):
 
     WARP_SCALE = value / 100
 
-    mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
     z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 100)}")
-    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
-    mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
+    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
+    mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
+    mayavi_widget.visualization.water_level.actor.scale = (1.0, 1.0, WARP_SCALE)
 
 def dem_file_select():
     global DATA
@@ -140,18 +133,25 @@ def dem_file_select():
     DATA = ds.ReadAsArray()
     ds = None
 
-    mayavi_widget.visualization.surf.mlab_source.reset(scalars=DATA, mask=None)
+    if mayavi_widget.visualization.surf is None:
+        mayavi_widget.visualization.surf = mayavi_widget.visualization.scene.mlab.surf(DATA, warp_scale=1)
+        mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
+    else:
+        mayavi_widget.visualization.surf.mlab_source.reset(scalars=DATA, mask=None)
 
     if INPUT_DATA is None:
         csv_file_button.setText("Click Here to select a CSV file..")
         csv_file_button.setEnabled(True)
     else:
-        mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
-        mayavi_widget.visualization.water_level.width = 1 * (1 + WARP_SCALE)
+        mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
         mayavi_widget.visualization.water_level.length = len(DATA)
         mayavi_widget.visualization.water_level.height = len(DATA[0])
-        mayavi_widget.visualization.water_level.x = (len(DATA) // 2) + 1
-        mayavi_widget.visualization.water_level.y = (len(DATA[0]) // 2) + 1
+        mayavi_widget.visualization.water_level.actor.scale = (1.0, 1.0, WARP_SCALE)
+
+
+    mayavi_widget.visualization.scene.isometric_view()
+    mayavi_widget.visualization.scene.reset_zoom()
+    mayavi_widget.visualization.scene._renwin.render()
 
 def csv_file_select():
     global INPUT_DATA
@@ -166,12 +166,16 @@ def csv_file_select():
     csv_file_button.setText(f"CSV File :: {csv_file_name}")
     INPUT_DATA = pandas.read_csv(csv_file_name)
     CURRENT_DATE = 0
-    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation'] * WARP_SCALE
-    mayavi_widget.visualization.water_level.width = 1 * (1+WARP_SCALE)
+
+    if mayavi_widget.visualization.water_level is None:
+        mayavi_widget.visualization.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'], length=len(DATA), height=len(DATA[0]))
+        mayavi_widget.visualization.water_level.v = 5.0
+    else:
+        mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
+
     mayavi_widget.visualization.water_level.length = len(DATA)
     mayavi_widget.visualization.water_level.height = len(DATA[0])
-    mayavi_widget.visualization.water_level.x = (len(DATA) // 2) + 1
-    mayavi_widget.visualization.water_level.y = (len(DATA[0]) // 2) + 1
+    mayavi_widget.visualization.water_level.actor.scale = (1.0, 1.0, WARP_SCALE)
 
     date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
     z_slider.setEnabled(True)
