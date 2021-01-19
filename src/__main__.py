@@ -42,8 +42,8 @@ class Visualization(HasTraits):
         # This function is called when the view is opened. We don't
         # populate the scene when the view is not yet open, as some
         # VTK features require a GLContext.
-
         visual.set_viewer(self.scene.mayavi_scene)
+
         self.surf = None
         self.water_level = None
 
@@ -148,10 +148,8 @@ def dem_file_select():
         mayavi_widget.visualization.water_level.height = len(DATA[0])
         mayavi_widget.visualization.water_level.actor.scale = (1.0, 1.0, WARP_SCALE)
 
-
-    mayavi_widget.visualization.scene.isometric_view()
-    mayavi_widget.visualization.scene.reset_zoom()
-    mayavi_widget.visualization.scene._renwin.render()
+    # isometric view
+    mayavi_widget.visualization.scene.scene_editor._tool_bar.tools[7].control.trigger()
 
 def csv_file_select():
     global INPUT_DATA
@@ -181,7 +179,6 @@ def csv_file_select():
     z_slider.setEnabled(True)
     next_button.setEnabled(True)
     previous_button.setEnabled(True)
-
 
 if __name__ == "__main__":
     # Don't create a new QApplication, it would unhook the Events
@@ -218,7 +215,7 @@ if __name__ == "__main__":
     layout.addWidget(date_label)
 
     z_slider = QtGui.QSlider(QtCore.Qt.Horizontal)
-    z_slider.setRange(5, 30)
+    z_slider.setRange(0, 100)
     z_slider.setValue(int(WARP_SCALE * 100))
     z_slider.setFocusPolicy(QtCore.Qt.NoFocus)
     z_slider.valueChanged.connect(z_slider_changed)
