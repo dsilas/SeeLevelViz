@@ -1,3 +1,4 @@
+import pandas._libs.tslibs.base
 import pandas
 
 INPUT_DATA = None
@@ -9,7 +10,7 @@ import os
 os.environ['ETS_TOOLKIT'] = 'qt4'
 # By default, the PySide binding will be used. If you want the PyQt bindings
 # to be used, you need to set the QT_API environment variable to 'pyqt'
-#os.environ['QT_API'] = 'pyqt'
+os.environ['QT_API'] = 'pyqt5'
 
 # To be able to use PySide or PyQt4 and not run in conflicts with traits,
 # we need to import QtGui and QtCore from pyface.qt
