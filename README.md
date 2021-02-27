@@ -35,3 +35,12 @@
 - conda remove mayavi pyface traits traitsui vtk --force
 - pip install mayavi --force-reinstall
 - pyinstaller src/__main__.py --clean --additional-hooks-dir=hooks --runtime-hook=runtime-hook.py --windowed --onefile --name=SeeLevelViz
+
+# streamlined windows process
+- conda create -n SeeLevelView mayavi pandas importlib-metadata gdal pyinstaller
+- conda remove pyqt qt --force
+- pip install PyQt5 --force-reinstall
+- pip install pyqtwebengine --force-reinstall
+- conda remove mayavi pyface traits traitsui vtk --force
+- pip install mayavi --force-reinstall
+- pyinstaller src/__main__.py --clean --additional-hooks-dir=hooks --runtime-hook=runtime-hook.py --windowed --onefile --name=SeeLevelViz
