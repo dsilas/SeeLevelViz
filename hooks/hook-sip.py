@@ -5,4 +5,4 @@ sip = collect_submodules('PyQt5.sip')
 
 hiddenimports = sip
 
-datas = collect_data_files('PyQt5.sip') + copy_metadata('PyQt5.sip')
+datas = collect_data_files('PyQt5.sip') # + copy_metadata('PyQt5.sip')

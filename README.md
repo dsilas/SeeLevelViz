@@ -1,7 +1,7 @@
 # SeeLevelViz
 
 ## Dependencies
-- docker.io
+- qt5
 - gdal
 - python3 & pip3
 
