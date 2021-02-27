@@ -30,4 +30,8 @@
 - pip install pyqtwebengine --force-reinstall
 - conda install gdal
 - conda install pyinstaller
+- conda remove vtk --force
+- pip install vtk --force-reinstall
+- conda remove mayavi pyface traits traitsui vtk --force
+- pip install mayavi --force-reinstall
 - pyinstaller src/__main__.py --clean --additional-hooks-dir=hooks --runtime-hook=runtime-hook.py --windowed --onefile --name=SeeLevelViz
