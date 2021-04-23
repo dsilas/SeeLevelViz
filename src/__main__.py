@@ -33,6 +33,7 @@ from tvtk.tools import visual
 WARP_SCALE = 0.1
 DATA = [[0]]
 
+
 ################################################################################
 #The actual visualization
 class Visualization(HasTraits):
@@ -95,16 +96,13 @@ def previous_date(self):
     date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
 
 
-def next_date(self):
+def set_data_index(self):
     global CURRENT_DATE
     global INPUT_DATA
     global mayavi_widget
     global date_label
 
-    CURRENT_DATE += 1
-
-    if CURRENT_DATE > len(INPUT_DATA) - 1:
-        CURRENT_DATE = len(INPUT_DATA) - 1
+    CURRENT_DATE = self.item_index
 
     mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
     date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
@@ -159,6 +157,7 @@ def csv_file_select():
     global CURRENT_DATE
     global WARP_SCALE
     global DATA
+    global table
 
     csv_file_name = QtGui.QFileDialog.getOpenFileName()[0]
     if csv_file_name == '':
@@ -180,8 +179,43 @@ def csv_file_select():
 
     date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
     z_slider.setEnabled(True)
-    next_button.setEnabled(True)
-    previous_button.setEnabled(True)
+
+    if table is not None:
+        layout.removeWidget(table)
+        table = None
+    table_data = INPUT_DATA.to_dict()
+    for k in table_data.keys():
+        table_data[k] = [str(v) for v in list(table_data[k].values())]
+
+    table = TableView(table_data, INPUT_DATA.shape[0], INPUT_DATA.shape[1])
+    layout.addWidget(table)
+
+
+class TableView(QtGui.QTableWidget):
+    def __init__(self, data, *args):
+        QtGui.QTableWidget.__init__(self, *args)
+        self.currentItemChanged.connect(set_data_index)
+        self.setSelectionBehavior(QtGui.QTableWidget.SelectRows)
+        self.data = data
+        self.setData()
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
+
+    def reset_data(self, data):
+        self.data = data
+        self.setData()
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
+
+    def setData(self):
+        horHeaders = []
+        for n, key in enumerate(sorted(self.data.keys())):
+            horHeaders.append(key)
+            for m, item in enumerate(self.data[key]):
+                newitem = QtGui.QTableWidgetItem(item)
+                newitem.item_index = m
+                self.setItem(m, n, newitem)
+        self.setHorizontalHeaderLabels(horHeaders)
 
 if __name__ == "__main__":
     # Don't create a new QApplication, it would unhook the Events
@@ -229,19 +263,7 @@ if __name__ == "__main__":
     z_slider_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
     layout.addWidget(z_slider_label)
 
-    previous_button = QtGui.QPushButton(container)
-    previous_button.setText("Previous")
-    previous_button.clicked.connect(previous_date)
-    previous_button.setShortcut(QtCore.Qt.Key_Left)
-    previous_button.setEnabled(False)
-    layout.addWidget(previous_button)
-
-    next_button = QtGui.QPushButton(container)
-    next_button.setText("Next")
-    next_button.clicked.connect(next_date)
-    next_button.setShortcut(QtCore.Qt.Key_Right)
-    next_button.setEnabled(False)
-    layout.addWidget(next_button)
+    table = None
 
     # container.show()
     window = QtGui.QMainWindow()
