@@ -120,7 +120,7 @@ def dem_file_select():
     ds = None
 
     if mayavi_widget.visualization.surf is None:
-        mayavi_widget.visualization.surf = mayavi_widget.visualization.scene.mlab.surf(DATA, warp_scale=1)
+        mayavi_widget.visualization.surf = mayavi_widget.visualization.scene.mlab.surf(DATA, warp_scale=1, colormap='BrBG')
         mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
     else:
         mayavi_widget.visualization.surf.mlab_source.reset(scalars=DATA, mask=None)
@@ -174,7 +174,7 @@ def csv_file_select():
     CURRENT_DATE = 0
 
     if mayavi_widget.visualization.water_level is None:
-        mayavi_widget.visualization.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'], length=len(DATA), height=len(DATA[0]))
+        mayavi_widget.visualization.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'], length=len(DATA), height=len(DATA[0]), color=(0.53, 0.81, 0.98))
         mayavi_widget.visualization.water_level.v = 5.0
     else:
         mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
