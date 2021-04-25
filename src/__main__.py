@@ -180,16 +180,14 @@ def csv_file_select():
     date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
     z_slider.setEnabled(True)
 
-    if table is not None:
-        layout.removeWidget(table)
-        table = None
+
     table_data = INPUT_DATA.to_dict()
     for k in table_data.keys():
         table_data[k] = [str(v) for v in list(table_data[k].values())]
 
-    table = TableView(table_data, INPUT_DATA.shape[0], INPUT_DATA.shape[1])
-    layout.addWidget(table)
-
+    table.setRowCount(INPUT_DATA.shape[0])
+    table.reset_data(table_data)
+    table.selectRow(0)
 
 class TableView(QtGui.QTableWidget):
     def __init__(self, data, *args):
@@ -263,7 +261,8 @@ if __name__ == "__main__":
     z_slider_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
     layout.addWidget(z_slider_label)
 
-    table = None
+    table = TableView({"dateBP":[], "elevation": []}, 1, 2)
+    layout.addWidget(table)
 
     # container.show()
     window = QtGui.QMainWindow()
