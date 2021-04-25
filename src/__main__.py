@@ -81,21 +81,6 @@ class MayaviQWidget(QtGui.QWidget):
         self.ui.setParent(self)
 
 
-def previous_date(self):
-    global CURRENT_DATE
-    global INPUT_DATA
-    global mayavi_widget
-    global date_label
-
-    CURRENT_DATE -= 1
-
-    if CURRENT_DATE < 0:
-        CURRENT_DATE = 0
-
-    mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
-    date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
-
-
 def set_data_index(self):
     global CURRENT_DATE
     global INPUT_DATA
@@ -126,7 +111,7 @@ def dem_file_select():
     global dem_file_button
     global csv_file_button
 
-    dem_file_name = QtGui.QFileDialog.getOpenFileName()[0]
+    dem_file_name = QtGui.QFileDialog.getOpenFileName(filter="tif(*.tif)")[0]
     if dem_file_name == '':
         return
     dem_file_button.setText(f"DEM File :: {dem_file_name}")
@@ -158,13 +143,34 @@ def csv_file_select():
     global WARP_SCALE
     global DATA
     global table
+    global window
 
-    csv_file_name = QtGui.QFileDialog.getOpenFileName()[0]
+    csv_file_name = QtGui.QFileDialog.getOpenFileName(filter="csv(*.csv)")[0]
     if csv_file_name == '':
         return
 
-    csv_file_button.setText(f"CSV File :: {csv_file_name}")
+    # load data
     INPUT_DATA = pandas.read_csv(csv_file_name)
+
+    # validate
+
+    # check if columns exist
+    columns = INPUT_DATA.columns.values
+    if 'dateBP' not in columns or 'elevation' not in columns:
+        QtGui.QMessageBox.warning(window, "Error", "Your csv file must contain columns dateBP and elevation")
+        return
+
+    # check column type
+    if pandas.api.types.is_numeric_dtype(INPUT_DATA['dateBP']) is False:
+        QtGui.QMessageBox.warning(window, "Error", "dateBP must be numeric")
+        return
+    if pandas.api.types.is_numeric_dtype(INPUT_DATA['elevation']) is False:
+        QtGui.QMessageBox.warning(window, "Error", "elevation must be numeric")
+        return
+
+    INPUT_DATA = INPUT_DATA.sort_values(by=['dateBP'], ascending=False)
+
+    csv_file_button.setText(f"CSV File :: {csv_file_name}")
     CURRENT_DATE = 0
 
     if mayavi_widget.visualization.water_level is None:
