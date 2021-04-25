@@ -249,7 +249,7 @@ if __name__ == "__main__":
     layout.addWidget(csv_file_button)
 
     date_label = QtGui.QLabel(container)
-    date_label.setText("Load CSV to see sea level and date data")
+    date_label.setText("Load CSV of sea-level data")
     date_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
     layout.addWidget(date_label)
 
