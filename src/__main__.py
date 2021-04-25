@@ -255,12 +255,12 @@ if __name__ == "__main__":
     layout.addWidget(csv_file_button)
 
     date_label = QtGui.QLabel(container)
-    date_label.setText("Load CSV of sea-level data")
+    date_label.setText("")
     date_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
     layout.addWidget(date_label)
 
     z_slider = QtGui.QSlider(QtCore.Qt.Horizontal)
-    z_slider.setRange(0, 100)
+    z_slider.setRange(1, 100)
     z_slider.setValue(int(WARP_SCALE * 100))
     z_slider.setFocusPolicy(QtCore.Qt.NoFocus)
     z_slider.valueChanged.connect(z_slider_changed)
