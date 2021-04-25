@@ -45,7 +45,7 @@ For larger study areas, it may be more illustrative to exxagerate Z perspective 
 # Build (using pyinstaller)
 - pyinstaller src/__main__.py --clean --additional-hooks-dir=hooks --runtime-hook=runtime-hook.py --windowed --onefile --name=SeeLevelViz
 
-# streamlined windows process (slightly easier way of dealing with dependencies)
+# streamlined windows process (slightly easier way of dealing with dependencies, requires weird force reinstall, etc)
 - conda create -n SeeLevelView mayavi pandas importlib-metadata gdal pyinstaller
 - conda remove pyqt qt --force
 - pip install PyQt5 --force-reinstall
