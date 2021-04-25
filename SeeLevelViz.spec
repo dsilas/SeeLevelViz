@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['src/__main__.py'],
-             pathex=['/home/vongalixor/Git/SeeLevelViz'],
+a = Analysis(['src\\__main__.py'],
+             pathex=['Z:\\'],
              binaries=[],
              datas=[],
              hiddenimports=[],
