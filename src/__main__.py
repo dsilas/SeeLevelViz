@@ -225,10 +225,14 @@ if __name__ == "__main__":
     # define a "complex" layout to test the behaviour
     layout = QtGui.QVBoxLayout(container)
 
+    splitter = QtGui.QSplitter(QtCore.Qt.Vertical)
     mayavi_widget = MayaviQWidget(container)
-    layout.addWidget(mayavi_widget)
+    splitter.addWidget(mayavi_widget)
 
-    # put some stuff around mayavi
+    table = TableView({"dateBP":[], "elevation": []}, 1, 2)
+    splitter.addWidget(table)
+
+    layout.addWidget(splitter)
 
     # DEM FILE SELECT
     dem_file_button = QtGui.QPushButton(container)
@@ -260,9 +264,6 @@ if __name__ == "__main__":
     z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 100)}")
     z_slider_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
     layout.addWidget(z_slider_label)
-
-    table = TableView({"dateBP":[], "elevation": []}, 1, 2)
-    layout.addWidget(table)
 
     # container.show()
     window = QtGui.QMainWindow()
