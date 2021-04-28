@@ -121,23 +121,36 @@ def dem_file_select():
     mask[DATA==nodata_value] = 1
     ds = None
 
-    if mayavi_widget.visualization.surf is None:
-        mayavi_widget.visualization.surf = mayavi_widget.visualization.scene.mlab.surf(DATA, warp_scale=1, colormap='BrBG', mask=mask)
-        mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
-    else:
-        mayavi_widget.visualization.surf.mlab_source.reset(scalars=DATA, mask=mask)
+    if mayavi_widget.visualization.surf is not None:
+        mayavi_widget.visualization.scene.remove_actor(mayavi_widget.visualization.surf.actor.actor)
+    mayavi_widget.visualization.surf = mayavi_widget.visualization.scene.mlab.surf(DATA, warp_scale=1, colormap='BrBG', mask=mask)
+    mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
 
     if INPUT_DATA is None:
         csv_file_button.setText("Click Here to select a CSV file..")
         csv_file_button.setEnabled(True)
     else:
-        mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
-        mayavi_widget.visualization.water_level.length = len(DATA)
-        mayavi_widget.visualization.water_level.height = len(DATA[0])
-        mayavi_widget.visualization.water_level.actor.scale = (1.0, 1.0, WARP_SCALE)
+        mayavi_widget.visualization.scene.remove_actor(mayavi_widget.visualization.water_level.actor)
+        mayavi_widget.visualization.water_level = None
+        initialize_water()
 
     # isometric view
     mayavi_widget.visualization.scene.scene_editor._tool_bar.tools[7].control.trigger()
+
+def initialize_water():
+    global mayavi_widget
+    global INPUT_DATA
+    global CURRENT_DATE
+    global DATA
+    if mayavi_widget.visualization.water_level is None:
+        mayavi_widget.visualization.water_level = visual.box(x=0, y=0, z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'], length=len(DATA), height=len(DATA[0]), color=(0.53, 0.81, 0.98))
+        mayavi_widget.visualization.water_level.v = 5.0
+    else:
+        mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
+
+    mayavi_widget.visualization.water_level.length = len(DATA)
+    mayavi_widget.visualization.water_level.height = len(DATA[0])
+    mayavi_widget.visualization.water_level.actor.scale = (1.0, 1.0, WARP_SCALE)
 
 def csv_file_select():
     global INPUT_DATA
@@ -174,16 +187,7 @@ def csv_file_select():
 
     csv_file_button.setText(f"CSV File :: {csv_file_name}")
     CURRENT_DATE = 0
-
-    if mayavi_widget.visualization.water_level is None:
-        mayavi_widget.visualization.water_level = visual.box(z=INPUT_DATA.iloc[CURRENT_DATE]['elevation'], length=len(DATA), height=len(DATA[0]), color=(0.53, 0.81, 0.98))
-        mayavi_widget.visualization.water_level.v = 5.0
-    else:
-        mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
-
-    mayavi_widget.visualization.water_level.length = len(DATA)
-    mayavi_widget.visualization.water_level.height = len(DATA[0])
-    mayavi_widget.visualization.water_level.actor.scale = (1.0, 1.0, WARP_SCALE)
+    initialize_water()
 
     date_label.setText(f"Current Date {int(INPUT_DATA.iloc[CURRENT_DATE][0])}\nCurrent Water Level {INPUT_DATA.iloc[CURRENT_DATE][1]}")
     z_slider.setEnabled(True)
