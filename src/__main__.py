@@ -99,7 +99,7 @@ def z_slider_changed(value):
 
     WARP_SCALE = value / 100
 
-    z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 100)}")
+    z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 10)}")
     mayavi_widget.visualization.water_level.z = INPUT_DATA.iloc[CURRENT_DATE]['elevation']
     mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
     mayavi_widget.visualization.water_level.actor.scale = (1.0, 1.0, WARP_SCALE)
@@ -273,7 +273,7 @@ if __name__ == "__main__":
     z_slider.setEnabled(False)
     layout.addWidget(z_slider)
     z_slider_label = QtGui.QLabel(container)
-    z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 100)}")
+    z_slider_label.setText(f"Z Perspective {int(WARP_SCALE * 10)}")
     z_slider_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
     layout.addWidget(z_slider_label)
 
