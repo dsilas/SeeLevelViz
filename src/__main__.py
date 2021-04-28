@@ -25,6 +25,7 @@ from traitsui.api import View, Item
 from mayavi.core.ui.api import MayaviScene, MlabSceneModel, \
         SceneEditor
 from osgeo import gdal
+import numpy as np
 from tvtk.tools import visual
 
 
@@ -114,14 +115,17 @@ def dem_file_select():
         return
     dem_file_button.setText(f"DEM File :: {dem_file_name}")
     ds = gdal.Open(dem_file_name)
-    DATA = ds.ReadAsArray()
+    DATA = ds.GetRasterBand(1).ReadAsArray()
+    nodata_value = ds.GetRasterBand(1).GetNoDataValue()
+    mask = np.zeros_like(DATA)
+    mask[DATA==nodata_value] = 1
     ds = None
 
     if mayavi_widget.visualization.surf is None:
-        mayavi_widget.visualization.surf = mayavi_widget.visualization.scene.mlab.surf(DATA, warp_scale=1, colormap='BrBG')
+        mayavi_widget.visualization.surf = mayavi_widget.visualization.scene.mlab.surf(DATA, warp_scale=1, colormap='BrBG', mask=mask)
         mayavi_widget.visualization.surf.actor.actor.scale = (1.0, 1.0, WARP_SCALE)
     else:
-        mayavi_widget.visualization.surf.mlab_source.reset(scalars=DATA, mask=None)
+        mayavi_widget.visualization.surf.mlab_source.reset(scalars=DATA, mask=mask)
 
     if INPUT_DATA is None:
         csv_file_button.setText("Click Here to select a CSV file..")
