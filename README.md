@@ -18,6 +18,7 @@ The spreadsheet must have the following two columns of numeric data with the fol
 
 ### Digital elevation map
 The digital elevation map (DEM) should be in tif format.  The measurement units should be the same in the DEM and the csv (metric or imperial).
+WARNING: If you use a very lage DEM file (hundreds of megabytes) it will likely overwhelm the memory of your computer and it will freeze. In this case downsampling your DEM is advised.
 
 ## Program features
 
