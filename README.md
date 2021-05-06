@@ -10,6 +10,8 @@ Advanced users: If you wish to build your own copy of the program from source co
 ## Download 
 You can download a copy of the of the file from XXXXXXXX for windows and XXXXXX for linux. A mac version is not currently available, but is planned.
 
+Please note, the file might take a couple minutes to open. If your Windows computer gives you a warning that the program could be a security risk, click on "More information" and it should give you the option to proceed.
+
 ## Prepare your data
 For the program to work, you need provide a two-column spreadsheet in csv format of sea levels and dates, and a digital elevation model in tif format of your study area
 
