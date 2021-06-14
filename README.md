@@ -1,6 +1,6 @@
 SeeLevelViz is a simple tool for presenting and interpreting palaeoshorelines based on reconstructions of past (or future) sea level. The program performs no complex calculations concerning ice sheets, GIA, etc. It is purely a way for scientists to interactively visualize simply and quickly how the palaeolandscape would have looked at different time slices, and share that with colleagues.
 
-The program is free but please cite the article XXXXXXXXXXXXX article name when you use it or show results at presentations and conferences.
+The program is free but please cite the article "SeeLevelViz, A simple data science tool for dynamic visualization of shoreline displacement caused by sea-level change" article name when you use it or show results at presentations and conferences.
 
 To use the program, see the section "How to use SeeLevelViz."
 Advanced users: If you wish to build your own copy of the program from source code, see the section "Building SeeLevelViz" below.
@@ -8,7 +8,7 @@ Advanced users: If you wish to build your own copy of the program from source co
 
 # How to use SeeLevelViz:
 ## Download 
-You can download a copy of the of the file from XXXXXXXX for windows and XXXXXX for linux. A mac version is not currently available, but is planned.
+You can download a copy of the of the file from https://github.com/dsilas/SeeLevelViz/releases for Windows or Linux. The Windows file is called "SeeLevelViz.exe" and the Linux version is called "SeeLevelViz." A mac version is not currently available, but is planned.
 
 Please note, the file might take a couple minutes to open. If your Windows computer gives you a warning that the program could be a security risk, click on "More information" and it should give you the option to proceed.
 
