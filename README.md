@@ -56,3 +56,6 @@ For larger study areas, it may be more illustrative to exxagerate Z perspective 
 - conda remove mayavi pyface traits traitsui vtk --force
 - pip install mayavi --force-reinstall
 - pyinstaller src/__main__.py --clean --additional-hooks-dir=hooks --runtime-hook=runtime-hook.py --windowed --onefile --name=SeeLevelViz
+
+
+SeeLevelViz is licensed under the GNU General Public License v3.0. See the LICENSE file in this repository for more details.
