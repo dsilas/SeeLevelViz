@@ -8,7 +8,7 @@ Advanced users: If you wish to build your own copy of the program from source co
 
 # How to use SeeLevelViz:
 ## Download 
-You can download a copy of the of the file from https://github.com/dsilas/SeeLevelViz/releases for Windows or Linux. The Windows file is called "SeeLevelViz.exe" and the Linux version is called "SeeLevelViz." A mac version is not currently available, but is planned.
+You can download a copy of the of the latest version of the program from https://github.com/dsilas/SeeLevelViz/releases for Windows or Linux. The Windows file is called "SeeLevelViz.exe" and the Linux version is called "SeeLevelViz." A mac version is not currently available, but is planned.
 
 Please note, the file might take a couple minutes to open. If your Windows computer gives you a warning that the program could be a security risk, click on "More information" and it should give you the option to proceed.
 
@@ -30,7 +30,7 @@ At this point, you will see your DEM with the sea-level cover at the oldest date
 
 You can click in the main pane and use the mouse to rotate the perspective, zoom in and out, etc. Some buttons at the top of the screen can be used to reset the view.
 
-For larger study areas, it may be more illustrative to exxagerate Z perspective so that relief stands out more. You can do this by adjusting the slider near the bottom of the screen. The default value is 10.
+For larger study areas, it may be more illustrative to exxagerate Z perspective so that relief stands out more. You can do this by adjusting the slider near the bottom of the screen.
 
 
 ## Building SeeLevelViz
@@ -58,4 +58,4 @@ For larger study areas, it may be more illustrative to exxagerate Z perspective 
 - pyinstaller src/__main__.py --clean --additional-hooks-dir=hooks --runtime-hook=runtime-hook.py --windowed --onefile --name=SeeLevelViz
 
 
-SeeLevelViz is licensed under the GNU General Public License v3.0. See the LICENSE file in this repository for more details.
+SeeLevelViz is licensed under the GNU General Public License v3.0. See the LICENSE file in the github repository for more details.
